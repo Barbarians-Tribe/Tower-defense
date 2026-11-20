@@ -1,0 +1,42 @@
+# Əməliyyat sistemi faylları
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+.DS_Store
+.Spotlight-V100
+.Trashes
+
+# Redaktor və IDE sazlamaları
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+
+# Node / Asılılıqlar
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Quruluş və çıxış qovluqları (Build / Dist)
+dist/
+build/
+out/
+target/
+
+# Mühit və gizli açarlar
+.env
+.env.local
+.env.*.local
+
+# Loqlar və müvəqqəti fayllar
+*.log
+*.tmp
+temp/
