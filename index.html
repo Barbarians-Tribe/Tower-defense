@@ -85,40 +85,499 @@ h1 { margin: 0; font-family: var(--display); font-weight: 400; font-size: clamp(
 .skinpick { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); display: grid; gap: 8px; justify-items: center; background: var(--panel); border: 2px solid var(--line); box-shadow: 0 0 0 2px var(--edge); padding: 8px; font-size: 18px; color: var(--steel); }
 .skinpick .btn { font-size: 22px; box-shadow: 0 0 0 2px var(--edge), 0 3px 0 2px var(--edge); }
 .toast { top: 12px; color: var(--gold); font-size: 24px; }
+
+/* ========== ANA MENYU (DÜŞƏRGƏ / MAIN MENU) STİLLƏRİ ========== */
+#mainMenu {
+  background: var(--panel);
+  border: 4px solid var(--edge);
+  box-shadow: 0 0 0 2px var(--line), 0 8px 0 2px var(--edge);
+  padding: 22px;
+  display: grid;
+  gap: 18px;
+  max-width: 1050px;
+  margin: 0 auto;
+}
+.menu-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid var(--line);
+  padding-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.game-logo {
+  margin: 0;
+  font-family: var(--display);
+  font-size: clamp(16px, 2.8vw, 24px);
+  color: var(--gold);
+  text-shadow: 0 3px 0 var(--edge);
+  letter-spacing: .05em;
+}
+.subtag {
+  font-size: 19px;
+  color: var(--steel);
+}
+.menu-currency-block {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.meta-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #14101a;
+  border: 2px solid var(--line);
+  box-shadow: 0 0 0 2px var(--edge);
+  padding: 4px 14px;
+  font-size: 24px;
+  color: var(--ink);
+}
+.meta-badge.gold {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.meta-badge .cur-label {
+  font-size: 15px;
+  color: var(--steel);
+  margin-left: 2px;
+}
+.menu-content-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+}
+.menu-panel {
+  background: #17121f;
+  border: 2px solid var(--line);
+  box-shadow: 0 0 0 2px var(--edge);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px dashed var(--line);
+  padding-bottom: 8px;
+}
+.panel-title {
+  font-family: var(--display);
+  font-size: 13px;
+  color: var(--gold);
+}
+.stage-tag, .info-tip {
+  font-size: 17px;
+  color: var(--steel);
+}
+.hero-showcase {
+  display: grid;
+  gap: 10px;
+}
+.hero-avatar-box {
+  background: #120d18;
+  border: 2px solid var(--line);
+  padding: 14px;
+  text-align: center;
+  display: grid;
+  gap: 4px;
+  place-items: center;
+}
+.hero-crest {
+  font-size: 38px;
+  line-height: 1;
+}
+.hero-name {
+  font-family: var(--display);
+  font-size: 13px;
+  color: var(--steel);
+}
+.hero-desc {
+  font-size: 18px;
+  color: var(--moss);
+}
+.skin-selector {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: #120d18;
+  border: 2px solid var(--line);
+  padding: 6px 10px;
+}
+.skin-buttons {
+  display: flex;
+  gap: 4px;
+}
+.gear-slots-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.gear-slot {
+  background: #120d18;
+  border: 2px solid var(--line);
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+.slot-icon {
+  font-size: 24px;
+  flex: none;
+}
+.slot-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+  min-width: 0;
+}
+.slot-type {
+  font-size: 14px;
+  color: var(--steel);
+}
+.slot-name {
+  font-size: 18px;
+  color: var(--ink);
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.slot-stat {
+  font-size: 16px;
+  color: var(--moss);
+}
+.tier-tag {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-size: 12px;
+  padding: 0 4px;
+  border: 1px solid #555;
+  color: #a0a0a0;
+}
+.upgrades-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.upgrade-row {
+  background: #120d18;
+  border: 2px solid var(--line);
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.up-icon {
+  font-size: 26px;
+  flex: none;
+}
+.up-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+.up-title {
+  font-size: 20px;
+  color: var(--ink);
+}
+.up-level {
+  font-size: 16px;
+  color: var(--gold);
+}
+.up-effect {
+  font-size: 16px;
+  color: var(--steel);
+}
+.up-buy-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 12px;
+  border-color: var(--gold);
+  color: var(--gold);
+  line-height: 1.1;
+  flex: none;
+  min-width: 82px;
+}
+.up-buy-btn .cost-gold {
+  font-size: 19px;
+  font-weight: bold;
+}
+.up-buy-btn .buy-lbl {
+  font-size: 14px;
+  color: var(--steel);
+}
+.up-buy-btn:disabled {
+  opacity: 0.45;
+  border-color: var(--line);
+  color: var(--line);
+  cursor: not-allowed;
+}
+.menu-bottom-bar {
+  display: flex;
+  justify-content: center;
+  padding-top: 6px;
+}
+.main-raid-btn {
+  font-family: var(--display);
+  font-size: 20px;
+  background: linear-gradient(180deg, #b83d47, #752229);
+  color: #fff;
+  border: 3px solid var(--gold);
+  box-shadow: 0 0 0 2px var(--edge), 0 6px 0 2px var(--edge);
+  padding: 16px 36px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  max-width: 480px;
+  text-shadow: 0 2px 0 var(--edge);
+  transition: transform .1s, box-shadow .1s;
+}
+.main-raid-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 0 2px var(--edge), 0 8px 0 2px var(--edge), 0 0 16px rgba(224, 178, 90, 0.4);
+}
+.main-raid-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 2px var(--edge);
+}
+.main-raid-btn .btn-subtext {
+  font-family: var(--font);
+  font-size: 19px;
+  color: var(--gold);
+  text-shadow: none;
+}
 </style>
 
 <div class="wrap">
-  <div class="top">
-    <h1>KULE SAVUNMA</h1>
-    <span class="tag">Taslak 1.6 · 2D Piksel Stil</span>
-  </div>
+  <!-- ==================== ANA MENYU (DÜŞƏRGƏ) ==================== -->
+  <div id="mainMenu" class="main-menu">
+    <div class="menu-topbar">
+      <div>
+        <h1 class="game-logo">KULE SAVUNMA</h1>
+        <div class="subtag">Düşərgə & Hazırlıq · Roguelite TD</div>
+      </div>
+      <div class="menu-currency-block">
+        <div class="meta-badge gold" title="Daimi Qızıl Xəzinəniz">
+          <span>🪙</span>
+          <span id="metaGoldText">250</span>
+          <span class="cur-label">QIZIL</span>
+        </div>
+        <div class="meta-badge stat" title="Ən Yaxşı Rekordunuz">
+          <span>🏆</span>
+          <span id="bestRecordText">0 Zombi</span>
+        </div>
+      </div>
+    </div>
 
-  <div class="hud">
-    <div class="badge" title="Para"><canvas class="ico" id="icoCoin" width="8" height="8"></canvas><span id="coins">0</span></div>
-    <div class="badge" title="Kule canı"><canvas class="ico" id="icoHeart" width="9" height="8"></canvas><div class="hpbar"><div class="hpfill" id="hpfill"></div></div><span id="hptext">100</span></div>
-    <div class="badge" title="Öldürülen zombi"><canvas class="ico" id="icoSkull" width="9" height="9"></canvas><span id="kills">0</span></div>
-    <span class="spacer"></span>
-    <button class="btn sm" id="zoomOut" type="button" aria-label="Uzaklaştır">−</button>
-    <button class="btn sm" id="zoomIn" type="button" aria-label="Yakınlaştır">+</button>
-    <button class="btn" id="homeBtn" type="button">Merkez</button>
-    <button class="btn" id="warpBtn" type="button" aria-pressed="true">Küre</button>
-    <button class="btn" id="rangeBtn" type="button" aria-pressed="true">Menzil</button>
-    <button class="btn" id="speedBtn" type="button">Hız 1×</button>
-    <button class="btn" id="sfxBtn" type="button" aria-pressed="true">Ses</button>
-    <button class="btn" id="pauseBtn" type="button">Duraklat</button>
-  </div>
+    <div class="menu-content-grid">
+      <!-- QƏHRƏMAN VƏ TƏCHİZAT (SOL) -->
+      <div class="menu-panel hero-panel">
+        <div class="panel-header">
+          <span class="panel-title">🛡️ QƏHRƏMAN & TƏCHİZAT</span>
+          <span class="stage-tag" id="currentStageLabel">Evrə 1</span>
+        </div>
+        
+        <div class="hero-showcase">
+          <div class="hero-avatar-box">
+            <div class="hero-crest">⚔️</div>
+            <div class="hero-name">Səlibçi Şövalyə</div>
+            <div class="hero-desc">Qalanın son cəngavəri</div>
+          </div>
+          
+          <div class="skin-selector">
+            <span class="sel-label" style="font-size: 18px; color: var(--steel);">Zireh Evrəsi:</span>
+            <div class="skin-buttons" id="menuSkinPick">
+              <button class="btn sm" type="button" data-st="1" aria-pressed="true">1</button>
+              <button class="btn sm" type="button" data-st="2" aria-pressed="false">2</button>
+              <button class="btn sm" type="button" data-st="3" aria-pressed="false">3</button>
+              <button class="btn sm" type="button" data-st="4" aria-pressed="false">4</button>
+              <button class="btn sm" type="button" data-st="5" aria-pressed="false">5</button>
+            </div>
+          </div>
 
-  <div class="stage" id="stage">
-    <div id="holder"></div>
-    <div class="skinpick" id="skinpick" aria-label="Şövalye görünüşü"><span>Evre</span><button class="btn sm" type="button" data-st="1" aria-pressed="true">1</button><button class="btn sm" type="button" data-st="2" aria-pressed="false">2</button><button class="btn sm" type="button" data-st="3" aria-pressed="false">3</button><button class="btn sm" type="button" data-st="4" aria-pressed="false">4</button><button class="btn sm" type="button" data-st="5" aria-pressed="false">5</button></div>
-    <div class="hint" id="hint">WASD: yürü · Boşluk: zıpla · Enter: kılıç (2×Enter: dönerek, basılı tut: şok dalgası) · P: duraklat · Sürükle/tekerlek: kamera</div>
-    <div class="overlay soft" id="pauseOv" hidden><div class="panel"><h2>DURAKLATILDI</h2><p>Devam etmek için Devam düğmesine veya P tuşuna bas.</p></div></div>
-    <div class="overlay" id="overOv" hidden>
-      <div class="panel"><h2>KULE DÜŞTÜ</h2><p id="overText"></p><button class="btn" id="restartBtn" type="button">Yeniden başla</button></div>
+          <div class="gear-slots-container">
+            <div class="gear-slot">
+              <div class="slot-icon">🗡️</div>
+              <div class="slot-info">
+                <div class="slot-type">Silah</div>
+                <div class="slot-name">Dəmir Qılınc</div>
+                <div class="slot-stat" id="gearWeaponStat">+2 Zərər</div>
+              </div>
+              <span class="tier-tag">Sadə</span>
+            </div>
+
+            <div class="gear-slot">
+              <div class="slot-icon">🛡️</div>
+              <div class="slot-info">
+                <div class="slot-type">Zireh</div>
+                <div class="slot-name">Dəri Zireh</div>
+                <div class="slot-stat" id="gearArmorStat">+15 Can</div>
+              </div>
+              <span class="tier-tag">Sadə</span>
+            </div>
+
+            <div class="gear-slot">
+              <div class="slot-icon">🪖</div>
+              <div class="slot-info">
+                <div class="slot-type">Dəbilqə</div>
+                <div class="slot-name">Dəmir Papaq</div>
+                <div class="slot-stat">+5 Müdafiə</div>
+              </div>
+              <span class="tier-tag">Sadə</span>
+            </div>
+
+            <div class="gear-slot">
+              <div class="slot-icon">💍</div>
+              <div class="slot-info">
+                <div class="slot-type">Aksesuar</div>
+                <div class="slot-name">Bürünc Üzük</div>
+                <div class="slot-stat" id="gearRingStat">+5% Qızıl</div>
+              </div>
+              <span class="tier-tag">Sadə</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DAİMİ TALANTLAR (SAĞ) -->
+      <div class="menu-panel upgrades-panel">
+        <div class="panel-header">
+          <span class="panel-title">⚡ DAİMİ TALANTLAR</span>
+          <span class="info-tip">Qızılla güclən</span>
+        </div>
+
+        <div class="upgrades-list">
+          <!-- Atk -->
+          <div class="upgrade-row">
+            <div class="up-icon">⚔️</div>
+            <div class="up-details">
+              <div class="up-title">Qılınc Zərəri <span class="up-level" id="lvlAtk">Lv.0</span></div>
+              <div class="up-effect">Hər zərbəyə <b id="valAtk">+0</b> zərər qatır</div>
+            </div>
+            <button class="btn up-buy-btn" id="buyAtk" type="button">
+              <span class="cost-gold">🪙 <span id="costAtk">50</span></span>
+              <span class="buy-lbl">Artır</span>
+            </button>
+          </div>
+
+          <!-- HP -->
+          <div class="upgrade-row">
+            <div class="up-icon">❤️</div>
+            <div class="up-details">
+              <div class="up-title">Qala & Əsgər Canı <span class="up-level" id="lvlHp">Lv.0</span></div>
+              <div class="up-effect">Canı <b id="valHp">+0 HP</b> çoxaldır</div>
+            </div>
+            <button class="btn up-buy-btn" id="buyHp" type="button">
+              <span class="cost-gold">🪙 <span id="costHp">60</span></span>
+              <span class="buy-lbl">Artır</span>
+            </button>
+          </div>
+
+          <!-- Range -->
+          <div class="upgrade-row">
+            <div class="up-icon">🏹</div>
+            <div class="up-details">
+              <div class="up-title">Arbalet Menzili <span class="up-level" id="lvlRange">Lv.0</span></div>
+              <div class="up-effect">Atış sahəsini <b id="valRange">+0m</b> genişləndirir</div>
+            </div>
+            <button class="btn up-buy-btn" id="buyRange" type="button">
+              <span class="cost-gold">🪙 <span id="costRange">75</span></span>
+              <span class="buy-lbl">Artır</span>
+            </button>
+          </div>
+
+          <!-- Silver -->
+          <div class="upgrade-row">
+            <div class="up-icon">🥈</div>
+            <div class="up-details">
+              <div class="up-title">Başlanğıc Gümüşü <span class="up-level" id="lvlSilver">Lv.0</span></div>
+              <div class="up-effect">Raidə <b id="valSilver">0 Gümüşlə</b> başlayırsan</div>
+            </div>
+            <button class="btn up-buy-btn" id="buySilver" type="button">
+              <span class="cost-gold">🪙 <span id="costSilver">50</span></span>
+              <span class="buy-lbl">Artır</span>
+            </button>
+          </div>
+
+          <!-- Gold Bonus -->
+          <div class="upgrade-row">
+            <div class="up-icon">💰</div>
+            <div class="up-details">
+              <div class="up-title">Qənimət Bərəkəti <span class="up-level" id="lvlGoldBonus">Lv.0</span></div>
+              <div class="up-effect">Qazanılan qızılları <b id="valGoldBonus">+0%</b> artırır</div>
+            </div>
+            <button class="btn up-buy-btn" id="buyGoldBonus" type="button">
+              <span class="cost-gold">🪙 <span id="costGoldBonus">80</span></span>
+              <span class="buy-lbl">Artır</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- START RAID BUTTON -->
+    <div class="menu-bottom-bar">
+      <button class="main-raid-btn" id="startRaidBtn" type="button">
+        <span class="btn-text">⚔️ RAİDƏ BAŞLA ⚔️</span>
+        <span class="btn-subtext">Qalanı qoru və qənimət qazan</span>
+      </button>
     </div>
   </div>
 
-  <div class="rules" id="rules" aria-label="Oyun kuralları"></div>
+  <!-- ==================== RAİD DÖYÜŞ SAHƏSİ ==================== -->
+  <div id="gameArea" style="display: none;">
+    <div class="top">
+      <h1>KULE SAVUNMA</h1>
+      <span class="tag">Raid Rejimi · 2D Piksel Stil</span>
+    </div>
+
+    <div class="hud">
+      <div class="badge" title="Gümüş (Raid Parası)"><canvas class="ico" id="icoCoin" width="8" height="8"></canvas><span id="coins">0</span></div>
+      <div class="badge" title="Kule canı"><canvas class="ico" id="icoHeart" width="9" height="8"></canvas><div class="hpbar"><div class="hpfill" id="hpfill"></div></div><span id="hptext">100</span></div>
+      <div class="badge" title="Öldürülen zombi"><canvas class="ico" id="icoSkull" width="9" height="9"></canvas><span id="kills">0</span></div>
+      <span class="spacer"></span>
+      <button class="btn sm" id="zoomOut" type="button" aria-label="Uzaklaştır">−</button>
+      <button class="btn sm" id="zoomIn" type="button" aria-label="Yakınlaştır">+</button>
+      <button class="btn" id="homeBtn" type="button">Merkez</button>
+      <button class="btn" id="warpBtn" type="button" aria-pressed="true">Küre</button>
+      <button class="btn" id="rangeBtn" type="button" aria-pressed="true">Menzil</button>
+      <button class="btn" id="speedBtn" type="button">Hız 1×</button>
+      <button class="btn" id="sfxBtn" type="button" aria-pressed="true">Ses</button>
+      <button class="btn" id="pauseBtn" type="button">Duraklat</button>
+      <button class="btn" id="toMenuBtn" type="button" style="border-color: var(--gold); color: var(--gold);">⛺ Düşərgə</button>
+    </div>
+
+    <div class="stage" id="stage">
+      <div id="holder"></div>
+      <div class="skinpick" id="skinpick" aria-label="Şövalye görünüşü"><span>Evre</span><button class="btn sm" type="button" data-st="1" aria-pressed="true">1</button><button class="btn sm" type="button" data-st="2" aria-pressed="false">2</button><button class="btn sm" type="button" data-st="3" aria-pressed="false">3</button><button class="btn sm" type="button" data-st="4" aria-pressed="false">4</button><button class="btn sm" type="button" data-st="5" aria-pressed="false">5</button></div>
+      <div class="hint" id="hint">WASD: yürü · Boşluk: zıpla · Enter: kılıç (2×Enter: dönerek, basılı tut: şok dalgası) · P: duraklat · Sürükle/tekerlek: kamera</div>
+      <div class="overlay soft" id="pauseOv" hidden><div class="panel"><h2>DURAKLATILDI</h2><p>Devam etmek için Devam düğmesine veya P tuşuna bas.</p></div></div>
+      <div class="overlay" id="overOv" hidden>
+        <div class="panel">
+          <h2>KULE DÜŞTÜ</h2>
+          <p id="overText"></p>
+          <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 8px;">
+            <button class="btn" id="restartBtn" type="button">Yenidən başla</button>
+            <button class="btn" id="returnMenuBtn" type="button" style="border-color: var(--gold); color: var(--gold);">🏰 Düşərgəyə (Menyuya) Qayıt</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rules" id="rules" aria-label="Oyun kuralları"></div>
+  </div>
 </div>
 
 <script>
@@ -2289,7 +2748,15 @@ function updateHud() {
 }
 function showOver() {
   const s = state;
-  overText.textContent = s.kills + ' zombi öldürdün, ' + s.coins + ' para topladın, ' + Math.round(s.time) + ' sn dayandın.';
+  const bonusMult = 1 + ((meta.upgrades.goldBonus || 0) * UPGRADE_CONFIG.goldBonus.statPerLvl) / 100;
+  const earnedGold = Math.max(10, Math.round((s.coins * 0.4 + s.kills * 2) * bonusMult));
+  meta.gold += earnedGold;
+  meta.bestKills = Math.max(meta.bestKills, s.kills);
+  meta.bestTime = Math.max(meta.bestTime, Math.round(s.time));
+  saveMeta();
+
+  overText.innerHTML = s.kills + ' zombi məhv edildi, ' + Math.round(s.time) + ' sn müdafiə olundu.<br>' +
+    '<div style="color:var(--gold); font-size:25px; margin-top:8px; font-weight:bold;">🪙 +' + fmt(earnedGold) + ' Qızıl xəzinəyə köçürüldü!</div>';
   overOv.hidden = false; pauseOv.hidden = true;
 }
 function setPaused(v) { if (state.over) return; state.paused = v; pauseBtn.textContent = v ? 'Devam' : 'Duraklat'; pauseOv.hidden = !v; }
@@ -2302,6 +2769,9 @@ function restart() {
 pauseBtn.addEventListener('click', () => setPaused(!state.paused));
 $('sfxBtn').addEventListener('click', e => { SFX.init(); e.currentTarget.setAttribute('aria-pressed', SFX.toggle() ? 'true' : 'false'); e.currentTarget.blur(); });
 restartBtn.addEventListener('click', restart);
+$('returnMenuBtn').addEventListener('click', returnToMenu);
+$('toMenuBtn').addEventListener('click', () => { if (confirm('Döyüşdən çıxıb Düşərgəyə (Ana Menyuya) qayıtmaq istəyirsiniz?')) returnToMenu(); });
+$('startRaidBtn').addEventListener('click', startRaid);
 speedBtn.addEventListener('click', () => { speedIdx = (speedIdx + 1) % SPEEDS.length; state.speed = SPEEDS[speedIdx]; speedBtn.textContent = 'Hız ' + state.speed + '×'; });
 rangeBtn.addEventListener('click', () => { showRange = !showRange; rangeBtn.setAttribute('aria-pressed', String(showRange)); });
 warpBtn.addEventListener('click', () => { warpOn = !warpOn; warpBtn.setAttribute('aria-pressed', String(warpOn)); });
@@ -2366,6 +2836,159 @@ try { window.focus(); } catch (e) { /* yoksay */ }
 document.addEventListener('pointerdown', () => { try { window.focus(); } catch (e) { /* yoksay */ } });
 document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('button'); if (b) b.blur(); });   // Boşluk tuşu düğmeleri tetiklemesin
 
+/* =====================================================================
+   META PROGRESSION & MAIN MENU LOGIC (Slime Castle tərzi)
+   ===================================================================== */
+let appMode = 'menu'; // 'menu' və ya 'raid'
+
+const META_KEY = 'kule_savunma_meta_v1';
+const UPGRADE_CONFIG = {
+  atk: { baseCost: 50, costMult: 1.5, statPerLvl: 1, unit: 'Zərər', maxLvl: 10 },
+  hp: { baseCost: 60, costMult: 1.45, statPerLvl: 15, unit: 'HP', maxLvl: 10 },
+  range: { baseCost: 75, costMult: 1.5, statPerLvl: 2, unit: 'm', maxLvl: 5 },
+  startSilver: { baseCost: 50, costMult: 1.6, statPerLvl: 25, unit: 'Gümüş', maxLvl: 8 },
+  goldBonus: { baseCost: 80, costMult: 1.65, statPerLvl: 10, unit: '%', maxLvl: 5 }
+};
+
+function loadMeta() {
+  try {
+    const raw = localStorage.getItem(META_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (!parsed.upgrades) parsed.upgrades = {};
+      return parsed;
+    }
+  } catch (e) {}
+  return {
+    gold: 250, // Test üçün 250 başlanğıc qızılı
+    bestKills: 0,
+    bestTime: 0,
+    stage: 1,
+    upgrades: {
+      atk: 0,
+      hp: 0,
+      range: 0,
+      startSilver: 0,
+      goldBonus: 0
+    }
+  };
+}
+
+let meta = loadMeta();
+
+function saveMeta() {
+  try {
+    localStorage.setItem(META_KEY, JSON.stringify(meta));
+  } catch (e) {}
+  renderMenu();
+}
+
+function getUpgradeCost(key) {
+  const cfg = UPGRADE_CONFIG[key];
+  const lvl = meta.upgrades[key] || 0;
+  return Math.round(cfg.baseCost * Math.pow(cfg.costMult, lvl));
+}
+
+function buyUpgrade(key) {
+  const cfg = UPGRADE_CONFIG[key];
+  const lvl = meta.upgrades[key] || 0;
+  if (lvl >= cfg.maxLvl) return;
+  const cost = getUpgradeCost(key);
+  if (meta.gold >= cost) {
+    meta.gold -= cost;
+    meta.upgrades[key] = lvl + 1;
+    saveMeta();
+    try { SFX.init(); SFX.play('coin'); } catch (e) {}
+  }
+}
+
+function renderMenu() {
+  if (!$('metaGoldText')) return;
+  $('metaGoldText').textContent = fmt(meta.gold);
+  $('bestRecordText').textContent = meta.bestKills + ' Zombi (' + meta.bestTime + ' sn)';
+  $('currentStageLabel').textContent = 'Evrə ' + (meta.stage || 1);
+
+  const bonusAtk = (meta.upgrades.atk || 0) * UPGRADE_CONFIG.atk.statPerLvl;
+  const bonusHp = (meta.upgrades.hp || 0) * UPGRADE_CONFIG.hp.statPerLvl;
+  const bonusGold = (meta.upgrades.goldBonus || 0) * UPGRADE_CONFIG.goldBonus.statPerLvl;
+  if ($('gearWeaponStat')) $('gearWeaponStat').textContent = '+' + (2 + bonusAtk) + ' Zərər';
+  if ($('gearArmorStat')) $('gearArmorStat').textContent = '+' + (15 + bonusHp) + ' Can';
+  if ($('gearRingStat')) $('gearRingStat').textContent = '+' + (5 + bonusGold) + '% Qızıl';
+
+  for (const key of ['atk', 'hp', 'range', 'startSilver', 'goldBonus']) {
+    const cfg = UPGRADE_CONFIG[key];
+    const lvl = meta.upgrades[key] || 0;
+    const cost = getUpgradeCost(key);
+    const capKey = key.charAt(0).toUpperCase() + key.slice(1);
+
+    const lvlEl = $('lvl' + capKey);
+    const valEl = $('val' + capKey);
+    const costEl = $('cost' + capKey);
+    const btnEl = $('buy' + capKey);
+
+    if (lvlEl) lvlEl.textContent = 'Lv.' + lvl + (lvl >= cfg.maxLvl ? ' (MAX)' : '');
+    if (valEl) {
+      if (key === 'atk') valEl.textContent = '+' + (lvl * cfg.statPerLvl);
+      else if (key === 'hp') valEl.textContent = '+' + (lvl * cfg.statPerLvl) + ' HP';
+      else if (key === 'range') valEl.textContent = '+' + (lvl * cfg.statPerLvl) + 'm';
+      else if (key === 'startSilver') valEl.textContent = (lvl * cfg.statPerLvl) + ' Gümüş';
+      else if (key === 'goldBonus') valEl.textContent = '+' + (lvl * cfg.statPerLvl) + '%';
+    }
+
+    if (costEl) costEl.textContent = lvl >= cfg.maxLvl ? '—' : fmt(cost);
+    if (btnEl) {
+      btnEl.disabled = (lvl >= cfg.maxLvl) || (meta.gold < cost);
+      btnEl.title = lvl >= cfg.maxLvl ? 'Maksimum səviyyə' : (meta.gold < cost ? 'Kifayət qədər qızıl yoxdur' : 'Təkmilləşdir');
+    }
+  }
+
+  document.querySelectorAll('#menuSkinPick button').forEach(bt => {
+    bt.setAttribute('aria-pressed', (+bt.dataset.st === (meta.stage || 1)) ? 'true' : 'false');
+  });
+}
+
+function applyMetaToGame() {
+  SOL.damage = CONFIG.soldier.damage + (meta.upgrades.atk || 0) * UPGRADE_CONFIG.atk.statPerLvl;
+  TW.hp = CONFIG.tower.hp + (meta.upgrades.hp || 0) * UPGRADE_CONFIG.hp.statPerLvl;
+  SOL.hp = CONFIG.soldier.hp + (meta.upgrades.hp || 0) * (UPGRADE_CONFIG.hp.statPerLvl / 2);
+  CF.range = CONFIG.crossbow.range + (meta.upgrades.range || 0) * UPGRADE_CONFIG.range.statPerLvl;
+  if (meta.stage) RG.setStage(meta.stage);
+}
+
+function startRaid() {
+  appMode = 'raid';
+  applyMetaToGame();
+  $('mainMenu').style.display = 'none';
+  $('gameArea').style.display = 'block';
+  restart();
+  state.coins = (meta.upgrades.startSilver || 0) * UPGRADE_CONFIG.startSilver.statPerLvl;
+  hud.coins = -1;
+  fit();
+  try { SFX.init(); SFX.play('wave'); } catch (e) {}
+  disp.focus();
+}
+
+function returnToMenu() {
+  appMode = 'menu';
+  $('gameArea').style.display = 'none';
+  $('mainMenu').style.display = 'grid';
+  renderMenu();
+}
+
+// Upgrade event listeners
+$('buyAtk').addEventListener('click', () => buyUpgrade('atk'));
+$('buyHp').addEventListener('click', () => buyUpgrade('hp'));
+$('buyRange').addEventListener('click', () => buyUpgrade('range'));
+$('buySilver').addEventListener('click', () => buyUpgrade('startSilver'));
+$('buyGoldBonus').addEventListener('click', () => buyUpgrade('goldBonus'));
+
+document.querySelectorAll('#menuSkinPick button').forEach(bt => bt.addEventListener('click', () => {
+  meta.stage = +bt.dataset.st;
+  RG.setStage(meta.stage);
+  saveMeta();
+}));
+
+renderMenu();
 setRings(0);
 let last = null;
 function frame(ts) {
@@ -2373,15 +2996,18 @@ function frame(ts) {
   if (last === null) last = ts;
   if (ts - last < 29) return;                                       // oyun 30 FPS çalışır
   const dt = Math.min(0.05, (ts - last) / 1000); last = ts;
-  if (!state.paused) {
+  if (appMode === 'raid' && !state.paused) {
     if (state.over) updateEffects(dt);
     else { const total = dt * state.speed, n = Math.max(1, Math.ceil(total / (1 / 60))); for (let i = 0; i < n && !state.over; i++) update(total / n); }
   }
-  drawWorld(); present(); updateHud(); if (!RG.done) RG.prewarm(4);
+  if (appMode === 'raid') {
+    drawWorld(); present(); updateHud(); if (!RG.done) RG.prewarm(4);
+  }
 }
 document.querySelectorAll('#skinpick button').forEach(bt => bt.addEventListener('click', () => {
-  RG.setStage(+bt.dataset.st);
-  document.querySelectorAll('#skinpick button').forEach(x => x.setAttribute('aria-pressed', x === bt ? 'true' : 'false'));
+  meta.stage = +bt.dataset.st;
+  RG.setStage(meta.stage);
+  document.querySelectorAll('#skinpick button, #menuSkinPick button').forEach(x => x.setAttribute('aria-pressed', +x.dataset.st === meta.stage ? 'true' : 'false'));
   bt.blur();
 }));
 requestAnimationFrame(frame);
