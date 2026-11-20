@@ -1023,7 +1023,7 @@ button { font-family: var(--font); cursor: pointer; border: none; outline: none;
 
     <!-- 2D Canvas Səhnəsi (Tam Ekran) -->
     <div class="stage" id="stage">
-      <div id="holder"></div>
+      <div id="holder" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;"></div>
       <div class="hint" id="hint">WASD: yürü · Boşluk: zıpla · Enter: kılıç (2×Enter: dönerek, basılı tut: şok dalgası) · Sürükle: kamera</div>
       
       <!-- GAME OVER PANELİ -->
@@ -3235,7 +3235,9 @@ function buildVig2() {
   if (!disp) { disp = mk(VW, VH); ctx2 = disp.getContext('2d'); ctx2.imageSmoothingEnabled = false; vig2 = buildVig2(); }
   disp.id = 'game'; disp.setAttribute('role', 'img');
   disp.setAttribute('aria-label', 'Kule savunma oyunu: ormanla çevrili otlağın ortasında köylü evi, çatısındaki okçu ağaçların arasından gelen zombilere ok atıyor');
-  document.getElementById('holder').appendChild(disp);
+  const stageEl = document.getElementById('stage');
+  if (stageEl) stageEl.insertBefore(disp, stageEl.firstChild);
+  else document.getElementById('holder').appendChild(disp);
 })();
 function present() {
   if (gl && gl.isContextLost()) return;
@@ -3322,8 +3324,11 @@ function fit() {
   const winW = window.innerWidth;
   const winH = window.innerHeight;
   const sc = Math.min(winW / VW, winH / VH);
-  disp.style.width = Math.round(VW * sc) + 'px';
-  disp.style.height = Math.round(VH * sc) + 'px';
+  const dw = Math.round(VW * sc);
+  const dh = Math.round(VH * sc);
+  disp.style.width = dw + 'px';
+  disp.style.height = dh + 'px';
+  disp.style.position = 'static';
   disp.style.imageRendering = sc >= 1 ? 'pixelated' : 'auto';
 }
 window.addEventListener('resize', fit);
@@ -3549,10 +3554,10 @@ function renderMenu() {
   $('metaGoldText').textContent = fmt(meta.gold);
   $('metaGemsText').textContent = fmt(meta.gems || 0);
 
-  // Rekordlar
-  $('bestRecordText').textContent = meta.bestKills + ' Zombi';
-  $('bestKillsBanner').textContent = meta.bestKills;
-  $('bestTimeBanner').textContent = meta.bestTime + ' sn';
+  // Rekordlar (null-safe)
+  if ($('bestRecordText')) $('bestRecordText').textContent = meta.bestKills + ' Zombi';
+  if ($('bestKillsBanner')) $('bestKillsBanner').textContent = meta.bestKills;
+  if ($('bestTimeBanner')) $('bestTimeBanner').textContent = meta.bestTime + ' sn';
 
   // 1. Talantlar Grid Renderi
   const tContainer = $('talentsGridContainer');
