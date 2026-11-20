@@ -1,26 +1,16 @@
-# Kule Savunma (Tower Defense) 🏰
+# Kule Savunma
 
-Bu layihə **Qüllə Müdafiəsi (Tower Defense)** janrında hazırlanmış strategiya oyunudur.
+Karanlık fantezi piksel sanatı kule savunma oyunu. Tek dosyalık tarayıcı oyunu.
 
-## 📌 Xüsusiyyətlər (Planlaşdırılan / Mövcud)
-- Müxtəlif növ müdafiə qüllələri (oxçu, sehrbaz, top və s.)
-- Fərqli xüsusiyyət və sürətə malik düşmən dalğaları (wave sistemi)
-- Xəritə və yol (pathfinding) mexanikası
-- Resurs idarəetməsi (qızıl/enerji) və qüllə təkmilləşdirmələri (upgrade)
+**Oynamak için:** `index.html` dosyasını tarayıcıda aç (veya GitHub Pages'i etkinleştir).
 
-## 🚀 Başlanğıc
-Layihəni yerli mühitdə işə salmaq üçün:
+## Kontroller
+WASD yürü · Boşluk zıpla · Enter saldırı (basılı tutunca şok dalgası) · Fare sürükle/tekerlek: kamera
 
-```bash
-# Repozitoriyanı klonlayın
-git clone https://github.com/muradmehralili/kule-savunma.git
+## Sürüm
+`index.html` = Taslak 1.6 (30 FPS, iskelet tabanlı karakterler, sentezlenmiş sesler, ölüm/çürüme animasyonları).
 
-# Qovluğa daxil olun
-cd kule-savunma
-```
-
-## 🛠️ Texnologiyalar
-- HTML5 / CSS3 / JavaScript (Canvas API)
-
-## 📄 Lisenziya
-Bu layihə açıq mənbəlidir.
+## src/
+Oyunun yapım betikleri ve karakter iskeleti kodu. `build11.py … build16.py` zincirleme çalışır (`kule-savunma-v10.html` tabanından).
+Not: `src/v5parts/rig.js` ve `k2d.js` içinde 1.6'dan sonraki, henüz bitmemiş 2B şövalye çalışması var.
+Betiklerdeki yollar yazıldığı ortama göredir, kullanmadan önce düzenlenmeli.
