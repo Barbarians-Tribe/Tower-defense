@@ -3235,9 +3235,9 @@ function buildVig2() {
   if (!disp) { disp = mk(VW, VH); ctx2 = disp.getContext('2d'); ctx2.imageSmoothingEnabled = false; vig2 = buildVig2(); }
   disp.id = 'game'; disp.setAttribute('role', 'img');
   disp.setAttribute('aria-label', 'Kule savunma oyunu: ormanla çevrili otlağın ortasında köylü evi, çatısındaki okçu ağaçların arasından gelen zombilere ok atıyor');
-  const stageEl = document.getElementById('stage');
-  if (stageEl) stageEl.insertBefore(disp, stageEl.firstChild);
-  else document.getElementById('holder').appendChild(disp);
+  const holderEl = document.getElementById('holder');
+  if (holderEl) holderEl.appendChild(disp);
+  else if (document.getElementById('stage')) document.getElementById('stage').appendChild(disp);
 })();
 function present() {
   if (gl && gl.isContextLost()) return;
