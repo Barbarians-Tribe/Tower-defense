@@ -4192,12 +4192,6 @@ function renderForgeTab() {
     lockCard.addEventListener('click', unlockMoreBagSlots);
     grid.appendChild(lockCard);
   }
-    const emptySlot = document.createElement('div');
-    emptySlot.className = 'rpg-inv-slot empty';
-    emptySlot.title = 'Boş Çanta Xanası';
-    emptySlot.innerHTML = `<span class="empty-plus">+</span>`;
-    grid.appendChild(emptySlot);
-  }
 }
 
 function executeForge() {
