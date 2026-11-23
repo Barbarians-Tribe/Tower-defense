@@ -714,6 +714,47 @@ button { font-family: var(--font); cursor: pointer; border: none; outline: none;
   line-height: 1;
 }
 
+/* Kilidli Xana Kartı (+10 Xana Açılışı) */
+.rpg-inv-slot.locked-slot {
+  border: 2px dashed #00b0ff;
+  background: rgba(0, 176, 255, 0.08);
+  cursor: pointer;
+  grid-column: span 2;
+  flex-direction: row;
+  gap: 8px;
+  padding: 6px 10px;
+  box-shadow: inset 0 0 10px rgba(0, 176, 255, 0.15);
+  transition: all 0.15s;
+}
+.rpg-inv-slot.locked-slot:hover {
+  background: rgba(0, 176, 255, 0.18);
+  border-color: #00e5ff;
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.4);
+  transform: translateY(-2px);
+}
+.rpg-inv-slot.locked-slot .lock-icon {
+  font-size: 24px;
+}
+.rpg-inv-slot.locked-slot .lock-info {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  line-height: 1.2;
+}
+.rpg-inv-slot.locked-slot .lock-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #00e5ff;
+}
+.rpg-inv-slot.locked-slot .lock-cost {
+  font-size: 12px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 800;
+}
+
 /* Dərəcə Rəngləri (Tier Borders & Glow) */
 .rpg-inv-slot.tier-common { border-color: #78909c; }
 .rpg-inv-slot.tier-rare   { border-color: #00e676; box-shadow: 0 0 6px rgba(0,230,118,0.25); }
@@ -1360,6 +1401,9 @@ button { font-family: var(--font); cursor: pointer; border: none; outline: none;
       <!-- Sol Üst: Sürət və Valyutalar -->
       <div class="hud-group">
         <button class="hud-pill-btn speed" id="speedToggleBtn" type="button">⏩ 1×</button>
+        <div class="hud-stat-pill" title="Mövcud Dalğa" style="border-color:var(--gold); color:var(--gold); font-weight:800;">
+          <span>🌊</span> <span id="hudWaveText">Dalğa 1/10</span>
+        </div>
         <div class="hud-stat-pill" title="Raid zamanı toplanan Qızıl">
           <span class="coin-icon gold"></span>
           <span id="hudGold">0</span>
@@ -2133,9 +2177,28 @@ function soldierUpdate(dt) {
   }
   SL.x = S.x; SL.y = S.y;
 }
+/* =====================================================================
+   10 MƏRHƏLƏLİ DALĞA (WAVE) SİSTEMİ
+   ===================================================================== */
+const WAVE_CONFIG = [
+  { wave: 1,  totalZombies: 10, spawnInterval: 2.2, hpMult: 1.0, spdMult: 1.0, rewardGems: 2 },
+  { wave: 2,  totalZombies: 15, spawnInterval: 1.9, hpMult: 1.1, spdMult: 1.05, rewardGems: 3 },
+  { wave: 3,  totalZombies: 22, spawnInterval: 1.7, hpMult: 1.25, spdMult: 1.1, rewardGems: 4 },
+  { wave: 4,  totalZombies: 30, spawnInterval: 1.5, hpMult: 1.45, spdMult: 1.15, rewardGems: 5 },
+  { wave: 5,  totalZombies: 40, spawnInterval: 1.3, hpMult: 1.7, spdMult: 1.2, rewardGems: 8 },  // Mini-Boss dalğası
+  { wave: 6,  totalZombies: 50, spawnInterval: 1.15, hpMult: 2.0, spdMult: 1.25, rewardGems: 8 },
+  { wave: 7,  totalZombies: 65, spawnInterval: 1.0, hpMult: 2.35, spdMult: 1.3, rewardGems: 10 },
+  { wave: 8,  totalZombies: 80, spawnInterval: 0.85, hpMult: 2.7, spdMult: 1.35, rewardGems: 12 },
+  { wave: 9,  totalZombies: 100, spawnInterval: 0.75, hpMult: 3.1, spdMult: 1.4, rewardGems: 15 },
+  { wave: 10, totalZombies: 130, spawnInterval: 0.6, hpMult: 3.6, spdMult: 1.5, rewardGems: 25 } // Final Boss dalğası
+];
+
 function newState() {
-  return { time: 0, coins: 0, kills: 0, hp: TW.hp, openRings: 0, zombies: [], corpses: [], arrows: [], parts: [], floaters: [],
-    spawnTimer: ZB.firstSpawn, shootTimer: CF.interval, aim: 0.8, kick: 0, towerFlash: 0, over: false, paused: false, speed: 1, sol: newSoldier() };
+  return {
+    time: 0, coins: 0, kills: 0, hp: TW.hp, openRings: 0, zombies: [], corpses: [], arrows: [], parts: [], floaters: [],
+    spawnTimer: 1.0, shootTimer: CF.interval, aim: 0.8, kick: 0, towerFlash: 0, over: false, paused: false, speed: 1, sol: newSoldier(),
+    currentWave: 1, waveSpawned: 0, waveKills: 0, waveCleared: false, waveBreakTimer: 0
+  };
 }
 let state = newState(), speedIdx = 0, showRange = true, warpOn = true;
 const SPEEDS = [1, 2, 4];
@@ -2153,10 +2216,20 @@ function setRings(n) {                                  // ileride balta ile hal
 }
 
 function spawnZombie() {
-  const R = openR + ZB.spawnMin + Math.random() * (ZB.spawnMax - ZB.spawnMin), a = Math.random() * Math.PI * 2;   // ormanın rastgele bir yerinden
-  state.zombies.push({ x: Math.cos(a) * R, y: Math.sin(a) * R, hp: ZB.hp, incoming: 0,
+  const wIdx = Math.min(WAVE_CONFIG.length - 1, Math.max(0, (state.currentWave || 1) - 1));
+  const wCfg = WAVE_CONFIG[wIdx];
+  const R = openR + ZB.spawnMin + Math.random() * (ZB.spawnMax - ZB.spawnMin), a = Math.random() * Math.PI * 2;
+  const isMiniBoss = (state.currentWave === 5 || state.currentWave === 10) && state.waveSpawned === wCfg.totalZombies - 1;
+  const zHp = Math.round(ZB.hp * wCfg.hpMult * (isMiniBoss ? 4.5 : 1));
+  const zSpd = ZB.speed * wCfg.spdMult * (isMiniBoss ? 0.8 : 1);
+
+  state.zombies.push({
+    x: Math.cos(a) * R, y: Math.sin(a) * R, hp: zHp, maxHp: zHp, incoming: 0,
     stop: TW.contact + Math.random() * 1.2, v: (Math.random() * 5) | 0, phase: Math.random() * 6, flash: 0, biting: false, biteTimer: 0,
-    dead: false, dyingT: 0, chase: false, sbite: 0.3, born: state.time, arrivedAfter: null, k: 0, sx: 0, sy: 0 });
+    dead: false, dyingT: 0, chase: false, sbite: 0.3, born: state.time, arrivedAfter: null, k: 0, sx: 0, sy: 0,
+    isBoss: isMiniBoss, spd: zSpd
+  });
+  state.waveSpawned++;
 }
 function burst(x, y, n, cols, sp, life, size, grav) {
   for (let i = 0; i < n; i++) {
@@ -2259,12 +2332,15 @@ const SFX = (() => {
       chOn = true;
       chO.frequency.setTargetAtTime(48 + level * 120, T(), 0.05); chF.frequency.setTargetAtTime(220 + level * 900, T(), 0.05); chG.gain.setTargetAtTime(0.025 + level * 0.07, T(), 0.05);
     },
-    /* zombi acısı: gerçek insan sesi. Okla vurulunca nefes çekme + "agh!" çığlığı; kılıçta kısa boğuk "hugh!" */
-    zHurt() {},                                                                                      // zombi sesleri kaldırıldı
-    groan() {},                                                                                      // zombi sesleri kaldırıldı
+    /* zombi acısı: qorxunc inilti və diş qıcırtısı */
+    zHurt(v, p) { P(v, p, (d, t) => { tone(d, t, 'sawtooth', rnd(120, 160), 60, 0.15, 0.35, 0.005); noise(d, t, 0.12, 'bandpass', 600, 250, 0.28, 0.004); }); },
+    groan(v, p) { P(v * 0.8, p, (d, t) => { tone(d, t, 'sawtooth', rnd(70, 95), 45, 0.5, 0.22, 0.06); noise(d, t, 0.45, 'lowpass', 450, 150, 0.18, 0.05); }); },
     bite(v, p) { P(v, p, (d, t) => { noise(d, t, 0.07, 'bandpass', 900, 600, 0.3, 0.004); noise(d, t + 0.08, 0.1, 'bandpass', 700, 400, 0.3, 0.004); tone(d, t, 'sine', 120, 60, 0.12, 0.35, 0.003); tone(d, t + 0.08, 'sine', 100, 55, 0.12, 0.3, 0.003); }); },
     claw(v, p) { P(v, p, (d, t) => { noise(d, t, 0.2, 'bandpass', 3400, 1500, 0.34, 0.01); noise(d, t + 0.01, 0.17, 'bandpass', 5200, 2600, 0.14, 0.01); armor(d, t + 0.05, 2.6); armor(d, t + 0.13, 1.8); tone(d, t, 'sine', 100, 52, 0.15, 0.45, 0.003); noise(d, t, 0.06, 'lowpass', 600, 200, 0.4, 0.003); }); },
-    zDeath() {},                                                                                      // zombi sesleri kaldırıldı
+    zDeath(v, p) { P(v, p, (d, t) => { tone(d, t, 'sawtooth', rnd(130, 90), 30, 0.45, 0.4, 0.005); noise(d, t + 0.05, 0.35, 'lowpass', 800, 120, 0.35, 0.01); }); },
+    coin(v, p) { P(v || 0.8, p, (d, t) => { tone(d, t, 'sine', 987, 1318, 0.15, 0.45, 0.001); tone(d, t + 0.08, 'sine', 1318, 1760, 0.22, 0.4, 0.001); }); },
+    wave(v, p) { P(v || 0.9, p, (d, t) => { tone(d, t, 'triangle', 220, 440, 0.4, 0.5, 0.01); tone(d, t + 0.15, 'triangle', 440, 880, 0.5, 0.6, 0.01); noise(d, t, 0.6, 'bandpass', 400, 1200, 0.25, 0.05); }); },
+    play(k) { if (this[k]) this[k](); else if (k === 'coin') this.coin(); else if (k === 'wave') this.wave(); else if (k === 'land') this.land('stone', 1, 0); },
     thud(v, p, dly) { P(v, p, (d, t) => { tone(d, t, 'sine', 100, 34, 0.26, 0.5, 0.003); noise(d, t, 0.2, 'lowpass', 800, 160, 0.3, 0.004); }, dly); },
     squelch(v, p) { if (!lim('sq', 70)) return; P(v, p, (d, t) => { const f = rnd(180, 420); tone(d, t, 'sine', f, f * 0.45, 0.09, 0.16, 0.004); noise(d, t, 0.1, 'bandpass', 1200, 500, 0.12, 0.01); }); },
     soldierHurt(v, p) { P(v, p, (d, t) => { voice(d, t + 0.02, { f0: rnd(110, 130), fm: 150, f1: 100, dur: 0.24, peak: 0.34, v: 'O', v2: 'A', rough: 1, breath: 0.5 }); tone(d, t, 'sine', 110, 55, 0.14, 0.3, 0.003); }); },
@@ -2322,8 +2398,40 @@ function update(dt) {
   soldierUpdate(dt);
   { let lv = S.dead ? 0 : 0.45; for (const L of LIGHTS) { const dd = Math.hypot(L.x - cam.x, L.y - cam.y); lv += 1 / (1 + dd * dd / 40); } SFX.ambient(Math.min(1, lv * 0.6), dt); }
   if (S.holding && S.holdT > 0.3 && !S.waveFired && !S.act && !S.dead) SFX.charge(clamp((S.holdT - 0.3) / (SOL.wave.hold - 0.3), 0, 1)); else SFX.charge(null);
-  s.spawnTimer -= dt;
-  while (s.spawnTimer <= 0) { spawnZombie(); s.spawnTimer += ZB.spawnInterval * (0.3 + Math.random() * 1.4); }
+  // DALĞA İDARƏETMƏSİ VƏ ZOMBİ SPAWN SİSTEMİ
+  const wIdx = Math.min(WAVE_CONFIG.length - 1, Math.max(0, (s.currentWave || 1) - 1));
+  const wCfg = WAVE_CONFIG[wIdx];
+
+  if (s.waveBreakTimer > 0) {
+    s.waveBreakTimer -= dt;
+    if (s.waveBreakTimer <= 0) {
+      s.waveSpawned = 0;
+      s.waveKills = 0;
+      s.waveCleared = false;
+      s.spawnTimer = 0.5;
+      try { SFX.wave(); } catch (e) {}
+    }
+  } else if (s.waveSpawned < wCfg.totalZombies) {
+    s.spawnTimer -= dt;
+    while (s.spawnTimer <= 0 && s.waveSpawned < wCfg.totalZombies) {
+      spawnZombie();
+      s.spawnTimer += wCfg.spawnInterval * (0.6 + Math.random() * 0.8);
+    }
+  } else if (s.zombies.length === 0 && !s.waveCleared) {
+    // Dalğa tamamlandı!
+    s.waveCleared = true;
+    s.gemsEarned = (s.gemsEarned || 0) + (wCfg.rewardGems || 2);
+    try { SFX.coin(); } catch (e) {}
+    if (s.currentWave < 10) {
+      s.currentWave++;
+      s.waveBreakTimer = 3.5; // 3.5 saniyəlik yeni dalğa hazırlığı
+    } else {
+      // 10-cu dalğa tamamlandı - QƏLƏBƏ
+      s.over = true;
+      showVictory();
+      return;
+    }
+  }
 
   for (const z of s.zombies) {
     if (z.dead) continue;
@@ -2333,15 +2441,16 @@ function update(dt) {
     const was = z.chase;
     z.chase = !S.dead && Math.hypot(z.x - S.x, z.y - S.y) < (was ? 7 : 4.5);
     if (was && !z.chase) z.biting = false;
+    const curSpd = z.spd || ZB.speed;
     if (z.chase) {                                              // asker yakındaysa ona saldırır
       const dx = S.x - z.x, dy = S.y - z.y, dd = Math.hypot(dx, dy) || 1; z.ang = Math.atan2(dy, dx);
-      if (dd > 1.1) { z.biting = false; const st = Math.min(ZB.speed * (z.hr > 0 ? 0.3 : 1) * dt, dd - 1.1); z.x += dx / dd * st; z.y += dy / dd * st; }
+      if (dd > 1.1) { z.biting = false; const st = Math.min(curSpd * (z.hr > 0 ? 0.3 : 1) * dt, dd - 1.1); z.x += dx / dd * st; z.y += dy / dd * st; }
       else { z.biting = true; z.sbite -= dt; if (z.sbite <= 0 && S.z < 0.5) { z.sbite = ZB.biteInterval; hurtSoldier(z); { const q = spat(z.x, z.y); SFX.claw(Math.max(q[0], 0.9), q[1]); } } }
       continue;
     }
     if (!z.biting) {
       z.ang = Math.atan2(-z.y, -z.x);
-      const dist = Math.hypot(z.x, z.y), step = ZB.speed * (z.hr > 0 ? 0.3 : 1) * dt;
+      const dist = Math.hypot(z.x, z.y), step = curSpd * (z.hr > 0 ? 0.3 : 1) * dt;
       if (dist - step <= z.stop) {
         const k = z.stop / dist; z.x *= k; z.y *= k;
         z.biting = true; z.biteTimer = ZB.biteInterval * 0.4; z.arrivedAfter = s.time - z.born;
@@ -3827,12 +3936,14 @@ function loadMeta() {
       if (!parsed.inventory) parsed.inventory = [];
       if (!parsed.equipped) parsed.equipped = { weapon: 'broad_sword', armor: 'leather_armor', helmet: 'iron_helm', ring: 'bronze_ring' };
       if (typeof parsed.gems === 'undefined') parsed.gems = 40;
+      if (typeof parsed.maxSlots === 'undefined' || parsed.maxSlots < 30) parsed.maxSlots = 30;
       return parsed;
     }
   } catch (e) {}
   return {
     gold: 250,
     gems: 40,
+    maxSlots: 30, // 30 baza xana (17 kristalla +10 xana açılır, maksimum 200)
     bestKills: 0,
     bestTime: 0,
     talents: {},
@@ -3899,6 +4010,28 @@ function switchMenuTab(targetId) {
 document.querySelectorAll('.nav-tab-btn').forEach(btn => {
   btn.addEventListener('click', () => switchMenuTab(btn.dataset.tab));
 });
+
+// 17 Kristalla +10 Xana Açılışı (Maksimum 200)
+function unlockMoreBagSlots() {
+  const currentSlots = meta.maxSlots || 30;
+  if (currentSlots >= 200) {
+    alert('Çantanın maksimum həcminə (200 xana) çatmısınız!');
+    return;
+  }
+  const COST_GEMS = 17;
+  if ((meta.gems || 0) < COST_GEMS) {
+    alert(`10 əlavə xana açmaq üçün ${COST_GEMS} Kristal lazımdır!\n(Hazırda: ${meta.gems || 0} Kristal)`);
+    return;
+  }
+  meta.gems -= COST_GEMS;
+  meta.maxSlots = Math.min(200, currentSlots + 10);
+  saveMeta();
+  try { SFX.init(); SFX.play('coin'); } catch (e) {}
+  renderHeroTab();
+  renderForgeTab();
+  renderMenu();
+  alert(`🎉 Təbrik edirik! Çantanız 10 xana genişləndirildi: ${meta.maxSlots}/200 Xana!`);
+}
 
 // Qənimət Düşmə Hadisəsi
 function onZombieLootDrop() {
@@ -3997,8 +4130,8 @@ function renderForgeTab() {
     notice.textContent = 'Dəmirçidə 3 eyni təchizatı birləşdirə bilərsiniz. Sağdakı çantadan 3x olan təchizata toxunun.';
   }
 
-  // Dəmirçi Çantası (24 Xanalar)
-  const TOTAL_SLOTS = 24;
+  // Dəmirçi Çantası (Xanalar Sistemi - 30 baza, max 200)
+  const TOTAL_SLOTS = meta.maxSlots || 30;
   const items = meta.inventory || [];
 
   items.forEach(item => {
@@ -4034,9 +4167,31 @@ function renderForgeTab() {
     grid.appendChild(slot);
   });
 
-  // Boş Xanalar (24-ə tamamlamaq üçün)
+  // Boş Xanalar
   const emptyCount = Math.max(0, TOTAL_SLOTS - items.length);
   for (let i = 0; i < emptyCount; i++) {
+    const emptySlot = document.createElement('div');
+    emptySlot.className = 'rpg-inv-slot empty';
+    emptySlot.title = 'Boş Dəmirçi Xanası';
+    emptySlot.innerHTML = `<span class="empty-plus">+</span>`;
+    grid.appendChild(emptySlot);
+  }
+
+  // Əgər 200 xanaya çatmayıbsa, növbəti 10 xana açılış kartı
+  if (TOTAL_SLOTS < 200) {
+    const lockCard = document.createElement('div');
+    lockCard.className = 'rpg-inv-slot locked-slot';
+    lockCard.title = '17 Kristalla +10 Xana Aç';
+    lockCard.innerHTML = `
+      <span class="lock-icon">🔒</span>
+      <div class="lock-info">
+        <span class="lock-title">+10 Xana Aç</span>
+        <span class="lock-cost"><span class="coin-icon gem" style="width:12px;height:12px;"></span> 17 Kristal</span>
+      </div>
+    `;
+    lockCard.addEventListener('click', unlockMoreBagSlots);
+    grid.appendChild(lockCard);
+  }
     const emptySlot = document.createElement('div');
     emptySlot.className = 'rpg-inv-slot empty';
     emptySlot.title = 'Boş Çanta Xanası';
@@ -4206,12 +4361,12 @@ function renderHeroTab() {
   // Cəngavərin Canlı Vizual Modeli
   renderHeroDoll();
 
-  // Sağ Tərəf: 24 Xanalı RPG Qənimət Çantası
+  // Sağ Tərəf: RPG Qənimət Çantası (30 baza, 17 kristalla +10, max 200)
   const invGrid = $('inventoryGridContainer');
   if (!invGrid) return;
   invGrid.innerHTML = '';
 
-  const TOTAL_SLOTS = 24;
+  const TOTAL_SLOTS = meta.maxSlots || 30;
   const items = meta.inventory || [];
   if ($('heroBagCountText')) $('heroBagCountText').textContent = `${items.length} / ${TOTAL_SLOTS} Xana`;
 
@@ -4250,6 +4405,22 @@ function renderHeroTab() {
     emptySlot.title = 'Boş Təchizat Xanası';
     emptySlot.innerHTML = `<span class="empty-plus">+</span>`;
     invGrid.appendChild(emptySlot);
+  }
+
+  // Əgər 200 xanaya çatmayıbsa, 17 kristalla +10 xana açma kartı
+  if (TOTAL_SLOTS < 200) {
+    const lockCard = document.createElement('div');
+    lockCard.className = 'rpg-inv-slot locked-slot';
+    lockCard.title = '17 Kristalla +10 Xana Aç';
+    lockCard.innerHTML = `
+      <span class="lock-icon">🔒</span>
+      <div class="lock-info">
+        <span class="lock-title">+10 Xana Genişləndir</span>
+        <span class="lock-cost"><span class="coin-icon gem" style="width:12px;height:12px;"></span> 17 Kristal</span>
+      </div>
+    `;
+    lockCard.addEventListener('click', unlockMoreBagSlots);
+    invGrid.appendChild(lockCard);
   }
 }
 
@@ -4492,6 +4663,19 @@ $('speedToggleBtn').addEventListener('click', toggleSpeed);
 function updateInGameHud() {
   if (appMode !== 'raid') return;
   const s = state;
+  const wIdx = Math.min(WAVE_CONFIG.length, Math.max(1, s.currentWave || 1));
+  const wCfg = WAVE_CONFIG[wIdx - 1];
+  const wTextEl = $('hudWaveText');
+  if (wTextEl) {
+    if (s.waveBreakTimer > 0) {
+      wTextEl.textContent = `Dalğa ${wIdx}/10 (${Math.ceil(s.waveBreakTimer)}s)`;
+      wTextEl.style.color = '#ffb74d';
+    } else {
+      wTextEl.textContent = `Dalğa ${wIdx}/10 (${s.waveSpawned}/${wCfg.totalZombies})`;
+      wTextEl.style.color = 'var(--gold)';
+    }
+  }
+
   $('hudGold').textContent = fmt(s.goldEarned || 0);
   $('hudSilver').textContent = fmt(s.coins || 0);
   $('hudGems').textContent = fmt(s.gemsEarned || 0);
@@ -4601,6 +4785,32 @@ $('toggleRangeBtn').addEventListener('click', e => {
   showRange = !showRange;
   e.currentTarget.textContent = '🎯 Atış Menzili: ' + (showRange ? 'Açıq' : 'Qapalı');
 });
+
+// QƏLƏBƏ HADİSƏSİ (10 DALĞA TAMAMLANDI)
+function showVictory() {
+  const s = state;
+  const talentGoldMult = 1 + ((meta.talents.goldBonus || 0) * 0.05) + ((state.goldBonusMult || 1) - 1);
+  const earnedGold = Math.max(50, Math.round((s.goldEarned || 0) * talentGoldMult + (s.kills * 2.5) + 200));
+  const earnedGems = (s.gemsEarned || 0) + 30; // Qələbə bonusu 30 kristal!
+
+  meta.gold += earnedGold;
+  meta.gems = (meta.gems || 0) + earnedGems;
+  meta.bestKills = Math.max(meta.bestKills, s.kills);
+  meta.bestTime = Math.max(meta.bestTime, Math.round(s.time));
+  saveMeta();
+
+  $('overText').innerHTML = `
+    <div style="font-size:24px; color:#69f0ae; font-weight:800; margin-bottom:8px;">🏆 10 DALĞANIN HAMISI DƏF EDİLDİ!</div>
+    Bütün zombi qoşunları və Baş Boss məhv edildi!<br>
+    ${s.kills} zombi öldürüldü, ${Math.round(s.time)} saniyə qala qorundu.<br>
+    <div style="display:flex; justify-content:center; gap:16px; margin-top:10px; font-size:22px; font-weight:700;">
+      <span style="color:var(--gold);"><span class="coin-icon gold"></span> +${fmt(earnedGold)} Qızıl</span>
+      <span style="color:var(--gem);"><span class="coin-icon gem"></span> +${earnedGems} Kristal</span>
+    </div>
+  `;
+  try { SFX.coin(); } catch (e) {}
+  overOv.hidden = false;
+}
 
 // RAID OVER HADİSƏSİ
 function showOver() {
