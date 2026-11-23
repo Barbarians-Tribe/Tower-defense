@@ -1091,6 +1091,9 @@ button { font-family: var(--font); cursor: pointer; border: none; outline: none;
         </div>
       </div>
       <div class="header-currencies">
+        <button id="menuMusicToggleBtn" type="button" title="Mahnını Aç / Söndür" style="background:#271d34; border:1px solid var(--gold); border-radius:20px; color:var(--gold); padding:4px 10px; font-size:12px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+          🎵 <span>Musiqi: Açıq</span>
+        </button>
         <div class="cur-pill gold" title="Qızıl">
           <span class="coin-icon gold"></span>
           <span id="metaGoldText">250</span>
@@ -4318,7 +4321,197 @@ function applyMetaToGame() {
   SOL.speed = CONFIG.soldier.speed * (1 + (meta.talents.moveSpeed || 0) * 0.04);
 }
 
+/* =====================================================================
+   ANA MENYU ARXA FON MUSİQİ MÜHƏRRİKİ (SEAMLESS CROSSFADE LOOP)
+   ===================================================================== */
+const MenuMusic = (() => {
+  let ctx = null;
+  let audioBuffer = null;
+  let isEnabled = true;
+  let isPlaying = false;
+  let activeNodes = [];
+  let loopTimer = null;
+  const CROSSFADE_SEC = 2.5; // Təkrar başlarkən hiss olunmaması üçün kəsişmə müddəti
+  const AUDIO_URLS = ['./audio/menu_theme.mp3', './audio/menu_theme.mpeg'];
+
+  function initCtx() {
+    if (!ctx) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) ctx = new AudioCtx();
+    }
+    if (ctx && ctx.state === 'suspended') {
+      ctx.resume().catch(() => {});
+    }
+  }
+
+  async function loadBuffer() {
+    if (audioBuffer) return audioBuffer;
+    initCtx();
+    if (!ctx) return null;
+
+    for (const url of AUDIO_URLS) {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) continue;
+        const arrayBuf = await res.arrayBuffer();
+        audioBuffer = await ctx.decodeAudioData(arrayBuf);
+        if (audioBuffer) break;
+      } catch (e) {
+        // Digər url formatını yoxla
+      }
+    }
+    return audioBuffer;
+  }
+
+  function playTrack(startTime, offset = 0, fadeIn = true) {
+    if (!ctx || !audioBuffer || !isEnabled) return null;
+    const dur = audioBuffer.duration;
+    if (offset >= dur) offset = 0;
+
+    const src = ctx.createBufferSource();
+    src.buffer = audioBuffer;
+
+    const gain = ctx.createGain();
+    src.connect(gain);
+    gain.connect(ctx.destination);
+
+    const now = ctx.currentTime;
+    const startAt = Math.max(now, startTime);
+
+    if (fadeIn) {
+      gain.gain.setValueAtTime(0.0001, startAt);
+      gain.gain.exponentialRampToValueAtTime(0.45, startAt + CROSSFADE_SEC);
+    } else {
+      gain.gain.setValueAtTime(0.45, startAt);
+    }
+
+    const playLen = dur - offset;
+    const fadeOutStart = startAt + playLen - CROSSFADE_SEC;
+    if (fadeOutStart > startAt) {
+      gain.gain.setValueAtTime(0.45, fadeOutStart);
+      gain.gain.exponentialRampToValueAtTime(0.0001, fadeOutStart + CROSSFADE_SEC);
+    }
+
+    src.start(startAt, offset);
+    src.stop(startAt + playLen);
+
+    const nodeItem = { src, gain, startAt, endAt: startAt + playLen };
+    activeNodes.push(nodeItem);
+
+    src.onended = () => {
+      activeNodes = activeNodes.filter(n => n.src !== src);
+    };
+
+    return nodeItem;
+  }
+
+  function scheduleNextLoop(triggerAt) {
+    if (!isPlaying || !isEnabled || !audioBuffer) return;
+    const now = ctx ? ctx.currentTime : 0;
+    const delayMs = Math.max(10, (triggerAt - now) * 1000);
+
+    clearTimeout(loopTimer);
+    loopTimer = setTimeout(() => {
+      if (!isPlaying || !isEnabled) return;
+      playTrack(triggerAt, 0, true);
+      const nextLoopAt = triggerAt + audioBuffer.duration - CROSSFADE_SEC;
+      scheduleNextLoop(nextLoopAt);
+    }, delayMs);
+  }
+
+  async function start() {
+    if (appMode !== 'menu' || !isEnabled) return;
+    initCtx();
+    const buf = await loadBuffer();
+    if (!buf || appMode !== 'menu' || !isEnabled) return;
+
+    if (isPlaying && activeNodes.length > 0) return;
+    isPlaying = true;
+
+    // Mövcud köhnə səs varsa təmizlə
+    stopAllNodes(false);
+
+    const now = ctx.currentTime;
+    playTrack(now, 0, true);
+
+    const nextLoopAt = now + buf.duration - CROSSFADE_SEC;
+    scheduleNextLoop(nextLoopAt);
+    updateToggleBtnUi();
+  }
+
+  function stopAllNodes(fade = true) {
+    clearTimeout(loopTimer);
+    loopTimer = null;
+    if (!ctx) return;
+    const now = ctx.currentTime;
+    activeNodes.forEach(node => {
+      try {
+        if (fade) {
+          node.gain.gain.cancelScheduledValues(now);
+          node.gain.gain.setValueAtTime(node.gain.gain.value, now);
+          node.gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.8);
+          node.src.stop(now + 0.85);
+        } else {
+          node.src.stop(now);
+        }
+      } catch (e) {}
+    });
+    activeNodes = [];
+  }
+
+  function stop() {
+    isPlaying = false;
+    stopAllNodes(true);
+  }
+
+  function toggle() {
+    isEnabled = !isEnabled;
+    if (isEnabled) {
+      if (appMode === 'menu') start();
+    } else {
+      stop();
+    }
+    updateToggleBtnUi();
+    return isEnabled;
+  }
+
+  function updateToggleBtnUi() {
+    const btn = document.getElementById('menuMusicToggleBtn');
+    if (!btn) return;
+    btn.innerHTML = isEnabled
+      ? '🎵 <span>Musiqi: Açıq</span>'
+      : '🔇 <span style="opacity:0.7;">Musiqi: Qapalı</span>';
+    btn.style.borderColor = isEnabled ? 'var(--gold)' : 'var(--line)';
+    btn.style.color = isEnabled ? 'var(--gold)' : 'var(--steel)';
+  }
+
+  return {
+    start,
+    stop,
+    toggle,
+    isEnabled: () => isEnabled,
+    initCtx
+  };
+})();
+
+// Menyu musiqisini istifadəçi ilk toxunuşunda başlatma
+window.addEventListener('pointerdown', () => {
+  MenuMusic.initCtx();
+  if (appMode === 'menu' && MenuMusic.isEnabled()) {
+    MenuMusic.start();
+  }
+}, { once: false });
+
+const menuMusicBtn = document.getElementById('menuMusicToggleBtn');
+if (menuMusicBtn) {
+  menuMusicBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    MenuMusic.toggle();
+  });
+}
+
 function startRaid() {
+  MenuMusic.stop();
   appMode = 'raid';
   requestLandscapeMode();
   applyMetaToGame();
@@ -4340,6 +4533,7 @@ function returnToMenu() {
   $('gameArea').style.display = 'none';
   $('mainMenu').style.display = 'flex';
   renderMenu();
+  MenuMusic.start();
 }
 
 // IN-GAME HUD & SÜRƏT DÜYMƏSİ
