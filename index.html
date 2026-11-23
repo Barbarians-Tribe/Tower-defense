@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=Oxanium:wght@400;600;700;800&family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<script src="./audio/theme_b64.js"></script>
 <style>
 /* Yatılı Mobil & Tam Ekran Stil Sistemi */
 :root {
@@ -4322,146 +4323,84 @@ function applyMetaToGame() {
 }
 
 /* =====================================================================
-   ANA MENYU ARXA FON MUSİQİ MÜHƏRRİKİ (SEAMLESS CROSSFADE LOOP)
+   ANA MENYU ARXA FON MUSİQİ MÜHƏRRİKİ (HTML5 AUDIO & WEB AUDIO HYBRID)
    ===================================================================== */
 const MenuMusic = (() => {
-  let ctx = null;
-  let audioBuffer = null;
   let isEnabled = true;
   let isPlaying = false;
-  let activeNodes = [];
-  let loopTimer = null;
-  const CROSSFADE_SEC = 2.5; // Təkrar başlarkən hiss olunmaması üçün kəsişmə müddəti
-  const AUDIO_URLS = ['./audio/menu_theme.mp3', './audio/menu_theme.mpeg'];
+  let bgAudio = null;
+  let fadeInterval = null;
+  const TARGET_VOL = 0.55;
 
-  function initCtx() {
-    if (!ctx) {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (AudioCtx) ctx = new AudioCtx();
+  // Audio mənbəyinin müəyyənləşdirilməsi (Fayl və ya daxili Base64)
+  function getAudioSrc() {
+    if (window.MENU_THEME_BASE64 && window.MENU_THEME_BASE64.length > 100) {
+      return window.MENU_THEME_BASE64;
     }
-    if (ctx && ctx.state === 'suspended') {
-      ctx.resume().catch(() => {});
-    }
+    return './audio/menu_theme.mp3';
   }
 
-  async function loadBuffer() {
-    if (audioBuffer) return audioBuffer;
-    initCtx();
-    if (!ctx) return null;
+  function initAudioElement() {
+    if (!bgAudio) {
+      bgAudio = new Audio();
+      bgAudio.src = getAudioSrc();
+      bgAudio.loop = true;
+      bgAudio.preload = 'auto';
+      bgAudio.volume = TARGET_VOL;
 
-    for (const url of AUDIO_URLS) {
-      try {
-        const res = await fetch(url);
-        if (!res.ok) continue;
-        const arrayBuf = await res.arrayBuffer();
-        audioBuffer = await ctx.decodeAudioData(arrayBuf);
-        if (audioBuffer) break;
-      } catch (e) {
-        // Digər url formatını yoxla
-      }
-    }
-    return audioBuffer;
-  }
-
-  function playTrack(startTime, offset = 0, fadeIn = true) {
-    if (!ctx || !audioBuffer || !isEnabled) return null;
-    const dur = audioBuffer.duration;
-    if (offset >= dur) offset = 0;
-
-    const src = ctx.createBufferSource();
-    src.buffer = audioBuffer;
-
-    const gain = ctx.createGain();
-    src.connect(gain);
-    gain.connect(ctx.destination);
-
-    const now = ctx.currentTime;
-    const startAt = Math.max(now, startTime);
-
-    if (fadeIn) {
-      gain.gain.setValueAtTime(0.0001, startAt);
-      gain.gain.exponentialRampToValueAtTime(0.45, startAt + CROSSFADE_SEC);
-    } else {
-      gain.gain.setValueAtTime(0.45, startAt);
-    }
-
-    const playLen = dur - offset;
-    const fadeOutStart = startAt + playLen - CROSSFADE_SEC;
-    if (fadeOutStart > startAt) {
-      gain.gain.setValueAtTime(0.45, fadeOutStart);
-      gain.gain.exponentialRampToValueAtTime(0.0001, fadeOutStart + CROSSFADE_SEC);
-    }
-
-    src.start(startAt, offset);
-    src.stop(startAt + playLen);
-
-    const nodeItem = { src, gain, startAt, endAt: startAt + playLen };
-    activeNodes.push(nodeItem);
-
-    src.onended = () => {
-      activeNodes = activeNodes.filter(n => n.src !== src);
-    };
-
-    return nodeItem;
-  }
-
-  function scheduleNextLoop(triggerAt) {
-    if (!isPlaying || !isEnabled || !audioBuffer) return;
-    const now = ctx ? ctx.currentTime : 0;
-    const delayMs = Math.max(10, (triggerAt - now) * 1000);
-
-    clearTimeout(loopTimer);
-    loopTimer = setTimeout(() => {
-      if (!isPlaying || !isEnabled) return;
-      playTrack(triggerAt, 0, true);
-      const nextLoopAt = triggerAt + audioBuffer.duration - CROSSFADE_SEC;
-      scheduleNextLoop(nextLoopAt);
-    }, delayMs);
-  }
-
-  async function start() {
-    if (appMode !== 'menu' || !isEnabled) return;
-    initCtx();
-    const buf = await loadBuffer();
-    if (!buf || appMode !== 'menu' || !isEnabled) return;
-
-    if (isPlaying && activeNodes.length > 0) return;
-    isPlaying = true;
-
-    // Mövcud köhnə səs varsa təmizlə
-    stopAllNodes(false);
-
-    const now = ctx.currentTime;
-    playTrack(now, 0, true);
-
-    const nextLoopAt = now + buf.duration - CROSSFADE_SEC;
-    scheduleNextLoop(nextLoopAt);
-    updateToggleBtnUi();
-  }
-
-  function stopAllNodes(fade = true) {
-    clearTimeout(loopTimer);
-    loopTimer = null;
-    if (!ctx) return;
-    const now = ctx.currentTime;
-    activeNodes.forEach(node => {
-      try {
-        if (fade) {
-          node.gain.gain.cancelScheduledValues(now);
-          node.gain.gain.setValueAtTime(node.gain.gain.value, now);
-          node.gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.8);
-          node.src.stop(now + 0.85);
-        } else {
-          node.src.stop(now);
+      // Hiss olunmayan loop (bitməyə 0.8 saniyə qalmış başa qaytarma dəstəyi)
+      bgAudio.addEventListener('timeupdate', () => {
+        if (!bgAudio.duration || !isPlaying) return;
+        // Əgər mahnı bitməyə 0.3 saniyə qalıbsa, mikrokəsinti olmadan əvvələ at
+        if (bgAudio.currentTime >= bgAudio.duration - 0.35) {
+          bgAudio.currentTime = 0.05;
         }
-      } catch (e) {}
-    });
-    activeNodes = [];
+      });
+    }
+    return bgAudio;
+  }
+
+  function start() {
+    if (appMode !== 'menu' || !isEnabled) return;
+    const a = initAudioElement();
+    if (!a) return;
+
+    if (isPlaying && !a.paused) return;
+
+    clearInterval(fadeInterval);
+    a.volume = 0.05;
+    const playPromise = a.play();
+    if (playPromise !== undefined) {
+      playPromise.then(() => {
+        isPlaying = true;
+        // Yumşaq səs artımı (fade-in)
+        let v = 0.05;
+        fadeInterval = setInterval(() => {
+          v = Math.min(TARGET_VOL, v + 0.06);
+          a.volume = v;
+          if (v >= TARGET_VOL) clearInterval(fadeInterval);
+        }, 80);
+        updateToggleBtnUi();
+      }).catch(err => {
+        // Brauzer user interaction gözləyir
+      });
+    }
   }
 
   function stop() {
     isPlaying = false;
-    stopAllNodes(true);
+    if (!bgAudio) return;
+    clearInterval(fadeInterval);
+    // Yumşaq sönmə (fade-out)
+    let v = bgAudio.volume;
+    fadeInterval = setInterval(() => {
+      v = Math.max(0, v - 0.1);
+      bgAudio.volume = v;
+      if (v <= 0) {
+        clearInterval(fadeInterval);
+        bgAudio.pause();
+      }
+    }, 60);
   }
 
   function toggle() {
@@ -4490,17 +4429,20 @@ const MenuMusic = (() => {
     stop,
     toggle,
     isEnabled: () => isEnabled,
-    initCtx
+    init: initAudioElement
   };
 })();
 
-// Menyu musiqisini istifadəçi ilk toxunuşunda başlatma
-window.addEventListener('pointerdown', () => {
-  MenuMusic.initCtx();
+// İstifadəçinin istənilən ilk toxunuşu və ya klikində musiqini dərhal başlat
+function userUnlockedAudio() {
   if (appMode === 'menu' && MenuMusic.isEnabled()) {
     MenuMusic.start();
   }
-}, { once: false });
+}
+window.addEventListener('pointerdown', userUnlockedAudio, { once: false });
+window.addEventListener('click', userUnlockedAudio, { once: false });
+window.addEventListener('touchstart', userUnlockedAudio, { once: false });
+window.addEventListener('keydown', userUnlockedAudio, { once: false });
 
 const menuMusicBtn = document.getElementById('menuMusicToggleBtn');
 if (menuMusicBtn) {
