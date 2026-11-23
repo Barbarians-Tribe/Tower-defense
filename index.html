@@ -419,8 +419,94 @@ button { font-family: var(--font); cursor: pointer; border: none; outline: none;
   min-height: 0;
   overflow: hidden;
 }
-@media (max-width: 820px) {
+@media (max-width: 820px) and (orientation: portrait) {
   .hero-tab-layout, .forge-tab-layout { grid-template-columns: 1fr; overflow-y: auto; }
+}
+
+/* =====================================================================
+   MƏCBURİ YAN (LANDSCAPE) ORIENTATION QORUYUCUSU
+   ===================================================================== */
+#orientationGuard {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: radial-gradient(circle at 50% 40%, #1e132c, #0a0610 90%);
+  z-index: 999999;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+@media screen and (orientation: portrait) {
+  #orientationGuard {
+    display: flex !important;
+  }
+}
+
+.orient-phone-box {
+  width: 90px;
+  height: 90px;
+  margin-bottom: 24px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.orient-phone-icon {
+  font-size: 64px;
+  display: inline-block;
+  animation: phoneRotateAnim 2.2s ease-in-out infinite;
+  filter: drop-shadow(0 0 16px var(--gold-glow));
+}
+@keyframes phoneRotateAnim {
+  0% { transform: rotate(0deg) scale(1); }
+  35% { transform: rotate(-90deg) scale(1.1); }
+  65% { transform: rotate(-90deg) scale(1.1); }
+  100% { transform: rotate(0deg) scale(1); }
+}
+.orient-title {
+  font-family: var(--display);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--gold);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  text-shadow: 0 0 14px var(--gold-glow);
+}
+.orient-desc {
+  font-size: 16px;
+  color: var(--ink);
+  max-width: 380px;
+  line-height: 1.5;
+  margin-bottom: 24px;
+}
+.orient-desc b {
+  color: #fff;
+  border-bottom: 1px dashed var(--gold);
+}
+.orient-action-btn {
+  background: linear-gradient(180deg, #f2be5c, #cb9431);
+  color: #0c0813;
+  border: 2px solid #fff;
+  border-radius: 30px;
+  padding: 12px 28px;
+  font-family: var(--display);
+  font-size: 16px;
+  font-weight: 800;
+  box-shadow: 0 4px 18px rgba(242,190,92,0.45);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.orient-action-btn:active {
+  transform: scale(0.96);
 }
 
 /* Qəhrəman Mərhələsi (Showcase Panel) */
@@ -979,6 +1065,20 @@ button { font-family: var(--font); cursor: pointer; border: none; outline: none;
 </style>
 
 <div class="wrap">
+  <!-- ==================== ORIENTATION GUARD (MƏCBURİ YAN TUTMA XƏBƏRDARLIĞI) ==================== -->
+  <div id="orientationGuard">
+    <div class="orient-phone-box">
+      <div class="orient-phone-icon">📱</div>
+    </div>
+    <div class="orient-title">Cihazı Yan Çevirin 🔄</div>
+    <div class="orient-desc">
+      Bu oyun <b>PUBG</b> və <b>yarış oyunları</b> kimi yalnız tam ekran <b>yan (Landscape)</b> rejimdə oynanılmaq üçün hazırlanıb.
+    </div>
+    <button id="lockLandscapeBtn" class="orient-action-btn" type="button">
+      🔄 Yan Rejimə Keç & Tam Ekran
+    </button>
+  </div>
+
   <!-- ==================== ANA MENYU (DÜŞƏRGƏ - 5 BÖLMƏLİ) ==================== -->
   <div id="mainMenu" class="main-menu-container">
     <!-- Yuxarı Bar: Profil və Valyutalar -->
@@ -1284,7 +1384,7 @@ button { font-family: var(--font); cursor: pointer; border: none; outline: none;
 
     <!-- 2D Canvas Səhnəsi (Tam Ekran) -->
     <div class="stage" id="stage">
-      <div id="holder" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;"></div>
+      <div id="holder" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;width:100%;height:100%;"></div>
       <div class="hint" id="hint">WASD: yürü · Boşluk: zıpla · Enter: kılıç (2×Enter: dönerek, basılı tut: şok dalgası) · Sürükle: kamera</div>
       
       <!-- GAME OVER PANELİ -->
@@ -3579,17 +3679,51 @@ document.addEventListener('keydown', e => {
 document.addEventListener('keyup', e => { keys.delete(e.code); if (e.code === 'Enter' || e.code === 'NumpadEnter') state.sol.holding = false; });
 window.addEventListener('blur', () => keys.clear());
 
-/* sahneyi yatay tam ekrana sığdır (scroll olmadan) */
+/* Cihazı Landscape (yan) rejimə kilidləmə və Tam Ekran köməkçisi */
+async function requestLandscapeMode() {
+  try {
+    if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
+      await document.documentElement.requestFullscreen().catch(() => {});
+    }
+  } catch (err) {}
+  try {
+    if (screen.orientation && screen.orientation.lock) {
+      await screen.orientation.lock('landscape').catch(() => {});
+    }
+  } catch (err) {}
+}
+
+const lockLandscapeBtn = document.getElementById('lockLandscapeBtn');
+if (lockLandscapeBtn) {
+  lockLandscapeBtn.addEventListener('click', () => {
+    requestLandscapeMode();
+    fit();
+  });
+}
+window.addEventListener('pointerdown', () => {
+  if (screen.orientation && screen.orientation.lock && screen.orientation.type.startsWith('portrait')) {
+    // Mobil toxunuş zamanı avtomatik cəhd et
+    try { screen.orientation.lock('landscape').catch(() => {}); } catch (e) {}
+  }
+}, { once: true });
+
+/* sahneyi yatay tam ekrana sığdır (qara kənarlıqsız / edge-to-edge) */
 function fit() {
   if (!disp) return;
   const winW = window.innerWidth;
   const winH = window.innerHeight;
-  const sc = Math.min(winW / VW, winH / VH);
-  const dw = Math.round(VW * sc);
-  const dh = Math.round(VH * sc);
+  // Kənarlarda qara ekran qalmamaq üçün Math.max ilə tam ekranı örtürük (cover)
+  const sc = Math.max(winW / VW, winH / VH);
+  const dw = Math.ceil(VW * sc);
+  const dh = Math.ceil(VH * sc);
   disp.style.width = dw + 'px';
   disp.style.height = dh + 'px';
-  disp.style.position = 'static';
+  disp.style.maxWidth = 'none';
+  disp.style.maxHeight = 'none';
+  disp.style.position = 'absolute';
+  disp.style.left = '50%';
+  disp.style.top = '50%';
+  disp.style.transform = 'translate(-50%, -50%)';
   disp.style.imageRendering = sc >= 1 ? 'pixelated' : 'auto';
 }
 window.addEventListener('resize', fit);
@@ -4186,6 +4320,7 @@ function applyMetaToGame() {
 
 function startRaid() {
   appMode = 'raid';
+  requestLandscapeMode();
   applyMetaToGame();
   $('mainMenu').style.display = 'none';
   $('gameArea').style.display = 'block';
@@ -4195,6 +4330,7 @@ function startRaid() {
   state.gemsEarned = 0;
   updateInGameHud();
   fit();
+  setTimeout(fit, 150);
   try { SFX.init(); SFX.play('wave'); } catch (e) {}
   disp.focus();
 }
