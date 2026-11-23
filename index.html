@@ -1435,14 +1435,16 @@ button { font-family: var(--font); cursor: pointer; border: none; outline: none;
       <div id="holder" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden;width:100%;height:100%;"></div>
       <div class="hint" id="hint">WASD: yürü · Boşluk: zıpla · Enter: kılıç (2×Enter: dönerek, basılı tut: şok dalgası) · Sürükle: kamera</div>
       
-      <!-- GAME OVER PANELİ -->
-      <div class="overlay" id="overOv" hidden>
-        <div class="panel">
-          <h2>KULE DÜŞTÜ</h2>
-          <p id="overText"></p>
-          <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 10px;">
-            <button class="btn" id="restartBtn" type="button" style="padding: 6px 18px; font-size:18px;">Yenidən Başla</button>
-            <button class="btn" id="returnMenuBtn" type="button" style="padding: 6px 18px; font-size:18px; border-color: var(--gold); color: var(--gold); background: #231930;">🏰 Düşərgəyə Qayıt</button>
+      <!-- GAME OVER / REZULTAT MODAL PƏNCƏRƏSİ -->
+      <div class="game-modal-overlay" id="overOv" style="display: none; z-index: 9999;">
+        <div class="game-modal-panel" style="max-width: 480px; text-align: center; border-color: var(--blood); box-shadow: 0 0 30px rgba(184, 61, 71, 0.45);">
+          <div class="game-modal-title" style="justify-content: center; color: var(--blood); border-color: rgba(184, 61, 71, 0.4);">
+            <span id="overTitleText">💀 KULE DÜŞTÜ</span>
+          </div>
+          <div id="overText" style="font-size: 16px; color: var(--ink); line-height: 1.5; padding: 10px 0;"></div>
+          <div style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: 10px;">
+            <button class="btn" id="restartBtn" type="button" style="padding: 10px 22px; font-size: 16px; font-weight: 700; border-radius: 8px; border-color: var(--steel); color: #fff; background: #241c30;">🔄 Yenidən Başla</button>
+            <button class="btn" id="returnMenuBtn" type="button" style="padding: 10px 26px; font-size: 16px; font-weight: 800; border-radius: 8px; border-color: var(--gold); color: #0c0813; background: linear-gradient(180deg, #f2be5c, #cb9431); box-shadow: 0 4px 14px var(--gold-glow);">🏰 Düşərgəyə Qayıt</button>
           </div>
         </div>
       </div>
@@ -3750,7 +3752,7 @@ function restart() {
   cam.x = 0; cam.y = 0; cam.zoom = 3;
   setRings(0);
   hud.coins = hud.hp = hud.kills = -1;
-  overOv.hidden = true;
+  overOv.style.display = 'none';
 }
 
 /* sürükle: kaydır · tekerlek / sıkıştır: yakınlaştır · ok tuşları, WASD, + − */
@@ -4494,7 +4496,6 @@ const MenuMusic = (() => {
   let isEnabled = true;
   let isPlaying = false;
   let bgAudio = null;
-  let fadeInterval = null;
   const TARGET_VOL = 0.55;
 
   // Audio mənbəyinin müəyyənləşdirilməsi (Fayl və ya daxili Base64)
@@ -4513,10 +4514,9 @@ const MenuMusic = (() => {
       bgAudio.preload = 'auto';
       bgAudio.volume = TARGET_VOL;
 
-      // Hiss olunmayan loop (bitməyə 0.8 saniyə qalmış başa qaytarma dəstəyi)
+      // Hiss olunmayan loop (bitməyə 0.35 saniyə qalmış başa qaytarma dəstəyi)
       bgAudio.addEventListener('timeupdate', () => {
         if (!bgAudio.duration || !isPlaying) return;
-        // Əgər mahnı bitməyə 0.3 saniyə qalıbsa, mikrokəsinti olmadan əvvələ at
         if (bgAudio.currentTime >= bgAudio.duration - 0.35) {
           bgAudio.currentTime = 0.05;
         }
@@ -4526,28 +4526,29 @@ const MenuMusic = (() => {
   }
 
   function start() {
+    // Savaş rejimindədirsə (raid), əsla çalma!
     if (appMode !== 'menu' || !isEnabled) return;
     const a = initAudioElement();
     if (!a) return;
 
     if (isPlaying && !a.paused) return;
 
-    clearInterval(fadeInterval);
-    a.volume = 0.05;
+    // Birbaşa və gecikmədən başlat
+    a.volume = TARGET_VOL;
     const playPromise = a.play();
     if (playPromise !== undefined) {
       playPromise.then(() => {
+        // Əgər həmin arada oyunçu artıq raide keçibsə, dərhal dayandır!
+        if (appMode !== 'menu') {
+          a.pause();
+          a.currentTime = 0;
+          isPlaying = false;
+          return;
+        }
         isPlaying = true;
-        // Yumşaq səs artımı (fade-in)
-        let v = 0.05;
-        fadeInterval = setInterval(() => {
-          v = Math.min(TARGET_VOL, v + 0.06);
-          a.volume = v;
-          if (v >= TARGET_VOL) clearInterval(fadeInterval);
-        }, 80);
         updateToggleBtnUi();
-      }).catch(err => {
-        // Brauzer user interaction gözləyir
+      }).catch(() => {
+        // Brauzer ilk qarşılıqlı əlaqəni gözləyir
       });
     }
   }
@@ -4555,17 +4556,11 @@ const MenuMusic = (() => {
   function stop() {
     isPlaying = false;
     if (!bgAudio) return;
-    clearInterval(fadeInterval);
-    // Yumşaq sönmə (fade-out)
-    let v = bgAudio.volume;
-    fadeInterval = setInterval(() => {
-      v = Math.max(0, v - 0.1);
-      bgAudio.volume = v;
-      if (v <= 0) {
-        clearInterval(fadeInterval);
-        bgAudio.pause();
-      }
-    }, 60);
+    // Döyüşə girəndə musiqini dərhal və tam kəs
+    try {
+      bgAudio.pause();
+      bgAudio.currentTime = 0;
+    } catch (e) {}
   }
 
   function toggle() {
@@ -4618,7 +4613,7 @@ if (menuMusicBtn) {
 }
 
 function startRaid() {
-  MenuMusic.stop();
+  MenuMusic.stop(); // Döyüşə girdikdə musiqi dərhal dayanır!
   appMode = 'raid';
   requestLandscapeMode();
   applyMetaToGame();
@@ -4640,7 +4635,7 @@ function returnToMenu() {
   $('gameArea').style.display = 'none';
   $('mainMenu').style.display = 'flex';
   renderMenu();
-  MenuMusic.start();
+  MenuMusic.start(); // Yalnız ana menyuya qayıtdıqda yenidən oxuyur!
 }
 
 // IN-GAME HUD & SÜRƏT DÜYMƏSİ
@@ -4793,17 +4788,18 @@ function showVictory() {
   meta.bestTime = Math.max(meta.bestTime, Math.round(s.time));
   saveMeta();
 
+  if ($('overTitleText')) $('overTitleText').textContent = '🏆 BÖYÜK QƏLƏBƏ!';
   $('overText').innerHTML = `
-    <div style="font-size:24px; color:#69f0ae; font-weight:800; margin-bottom:8px;">🏆 10 DALĞANIN HAMISI DƏF EDİLDİ!</div>
+    <div style="font-size:22px; color:#69f0ae; font-weight:800; margin-bottom:8px;">10 DALĞANIN HAMISI DƏF EDİLDİ!</div>
     Bütün zombi qoşunları və Baş Boss məhv edildi!<br>
-    ${s.kills} zombi öldürüldü, ${Math.round(s.time)} saniyə qala qorundu.<br>
-    <div style="display:flex; justify-content:center; gap:16px; margin-top:10px; font-size:22px; font-weight:700;">
+    <b>${s.kills}</b> zombi öldürüldü · <b>${Math.round(s.time)}</b> saniyə qala qorundu.<br>
+    <div style="display:flex; justify-content:center; gap:16px; margin-top:12px; font-size:20px; font-weight:700;">
       <span style="color:var(--gold);"><span class="coin-icon gold"></span> +${fmt(earnedGold)} Qızıl</span>
       <span style="color:var(--gem);"><span class="coin-icon gem"></span> +${earnedGems} Kristal</span>
     </div>
   `;
   try { SFX.coin(); } catch (e) {}
-  overOv.hidden = false;
+  overOv.style.display = 'flex';
 }
 
 // RAID OVER HADİSƏSİ
@@ -4819,23 +4815,26 @@ function showOver() {
   meta.bestTime = Math.max(meta.bestTime, Math.round(s.time));
   saveMeta();
 
+  if ($('overTitleText')) $('overTitleText').textContent = '💀 QALA MƏHV OLDU';
   $('overText').innerHTML = `
-    ${s.kills} zombi məhv edildi, ${Math.round(s.time)} sn müdafiə olundu.<br>
-    <div style="display:flex; justify-content:center; gap:16px; margin-top:10px; font-size:22px; font-weight:700;">
+    Zombilər müdafiə xəttini yardı və qala dağıdıldı!<br>
+    <b>${s.kills}</b> zombi öldürüldü · <b>${Math.round(s.time)}</b> saniyə sağ qalındı.<br>
+    <div style="display:flex; justify-content:center; gap:16px; margin-top:12px; font-size:20px; font-weight:700;">
       <span style="color:var(--gold);"><span class="coin-icon gold"></span> +${fmt(earnedGold)} Qızıl</span>
       ${earnedGems > 0 ? '<span style="color:var(--gem);"><span class="coin-icon gem"></span> +' + earnedGems + ' Kristal</span>' : ''}
     </div>
   `;
-  overOv.hidden = false;
+  try { SFX.land('stone', 1, 0); } catch (e) {}
+  overOv.style.display = 'flex';
 }
 
 $('startRaidBtn').addEventListener('click', startRaid);
 $('restartBtn').addEventListener('click', () => {
-  overOv.hidden = true;
+  overOv.style.display = 'none';
   startRaid();
 });
 $('returnMenuBtn').addEventListener('click', () => {
-  overOv.hidden = true;
+  overOv.style.display = 'none';
   returnToMenu();
 });
 
