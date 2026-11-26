@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [black, prod]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: JS fayllarının sintaksisi
+        run: |
+          for f in $(find . -name '*.js' -not -path './.git/*'); do
+            node --check "$f" || exit 1
+          done
+
+      - name: Python skriptlərinin sintaksisi
+        run: python -m py_compile src/*.py
+
+      - name: Oyunu brauzerdə açıb xətaları yoxla
+        run: |
+          npm install --no-save playwright@1.49.1
+          npx playwright install --with-deps chromium
+          node .github/scripts/smoke.mjs
