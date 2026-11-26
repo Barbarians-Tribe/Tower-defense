@@ -1,0 +1,28 @@
+name: Release
+
+on:
+  push:
+    branches: [prod]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Növbəti versiyanı hesabla
+        id: version
+        run: |
+          last=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          IFS='.' read -r major minor patch <<< "${last#v}"
+          echo "tag=v${major}.${minor}.$((patch + 1))" >> "$GITHUB_OUTPUT"
+
+      - name: Tag və Release yarat
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${{ steps.version.outputs.tag }}" --target "${{ github.sha }}" --generate-notes
